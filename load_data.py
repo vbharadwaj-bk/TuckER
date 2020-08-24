@@ -1,9 +1,9 @@
 class Data:
 
     def __init__(self, data_dir="data/FB15k-237/", reverse=False):
-        self.train_data = self.load_data(data_dir, "train", reverse=reverse)
-        self.valid_data = self.load_data(data_dir, "valid", reverse=reverse)
-        self.test_data = self.load_data(data_dir, "test", reverse=reverse)
+        self.train_data = self.load_data(data_dir, "train", reverse=reverse)[0:2000]
+        self.valid_data = self.load_data(data_dir, "valid", reverse=reverse)[0:2000]
+        self.test_data = self.load_data(data_dir, "test", reverse=reverse)[0:2000]
         self.data = self.train_data + self.valid_data + self.test_data
         self.entities = self.get_entities(self.data)
         self.train_relations = self.get_relations(self.train_data)

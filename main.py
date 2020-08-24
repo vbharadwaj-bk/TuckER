@@ -21,7 +21,7 @@ class Experiment:
         self.batch_size = batch_size
         self.decay_rate = decay_rate
         self.label_smoothing = label_smoothing
-        self.cuda = cuda
+        self.cuda = False 
         self.kwargs = {"input_dropout": input_dropout, "hidden_dropout1": hidden_dropout1,
                        "hidden_dropout2": hidden_dropout2}
         
@@ -80,8 +80,7 @@ class Experiment:
             sort_idxs = sort_idxs.cpu().numpy()
             for j in range(data_batch.shape[0]):
                 rank = np.where(sort_idxs[j]==e2_idx[j].item())[0][0]
-                ranks.append(rank+1)
-
+                ranks.append(rank+1) 
                 for hits_level in range(10):
                     if rank <= hits_level:
                         hits[hits_level].append(1.0)
