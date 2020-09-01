@@ -43,8 +43,7 @@ class Indexable_Core_Set(torch.nn.Module):
             coreSize.insert(0, ranks[i])
             coreSize.append(ranks[i+1])
 
-            # Todo: Need to add a CUDA flag here, and also better initialization for the cores! 
-            self.cores.append(torch.nn.Parameter(torch.rand(coreSize) * 0.1, requires_grad=True, device="cuda"))
+            self.cores.append(torch.nn.Parameter(torch.rand(coreSize) * 0.1, requires_grad=True))
 
 
     def createIndexBatch(self, indices):
@@ -98,7 +97,7 @@ class TuckER(torch.nn.Module):
 
     def init(self):
         xavier_normal_(self.E.weight.data)
-        xavier_normal_(self.R.weight.data)
+        # xavier_normal_(self.R.weight.data)
 
     def forward(self, e1_idx, r_idx):
         e1 = self.E(e1_idx)
