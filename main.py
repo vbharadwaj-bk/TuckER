@@ -143,14 +143,15 @@ class Experiment:
             print(time.time()-start_train)    
             print(np.mean(losses))
             model.eval()
-            with torch.no_grad():
-                print("Validation:")
-                self.evaluate(model, d.valid_data)
-                if not it%2:
-                    print("Test:")
-                    start_test = time.time()
-                    self.evaluate(model, d.test_data)
-                    print(time.time()-start_test)
+            if not it%5:
+                with torch.no_grad():
+                    print("Validation:")
+                    self.evaluate(model, d.valid_data)
+                    if not it%2:
+                        print("Test:")
+                        start_test = time.time()
+                        self.evaluate(model, d.test_data)
+                        print(time.time()-start_test)
            
 
         
