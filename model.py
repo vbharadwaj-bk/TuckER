@@ -6,6 +6,7 @@ import tensornetwork as tn
 import numpy as np
 import torch
 import time
+import t3nsor as t3
 
 def unmap(indices, factorization):
         all_factored = []
@@ -79,7 +80,11 @@ class TuckER(torch.nn.Module):
     def __init__(self, d, d1, d2, **kwargs):
         super(TuckER, self).__init__()
 
-        self.E = torch.nn.Embedding(len(d.entities), d1)
+        self.E = t3.TTEmbedding(
+            voc_size=len(d.entities),
+            emb_size=d1
+        )
+        # self.E = torch.nn.Embedding(len(d.entities), d1)
         # self.R = torch.nn.Embedding(len(d.relations), d2)
         # self.W = torch.nn.Parameter(torch.tensor(np.random.uniform(-1, 1, (d2, d1, d1)), 
         #                            dtype=torch.float, device="cuda", requires_grad=True))
@@ -100,9 +105,12 @@ class TuckER(torch.nn.Module):
         # xavier_normal_(self.R.weight.data)
 
     def forward(self, e1_idx, r_idx):
-        e1 = self.E(e1_idx)
+        # Hopefully, should never have to materialize the matrix 
+        e_full = self.E.tt_matrix.full()
+
+        e1 = e_full[e1_idx]
         x = self.bn0(e1)
-        x = self.input_dropout(x)
+        # x = self.input_dropout(x)
         x = x.view(-1, 1, e1.size(1))
 
         W_mat = self.core.getStack(r_idx)
@@ -111,8 +119,8 @@ class TuckER(torch.nn.Module):
         x = torch.bmm(x, W_mat) 
         x = x.view(-1, e1.size(1))      
         x = self.bn1(x)
-        x = self.hidden_dropout2(x)
-        x = torch.mm(x, self.E.weight.transpose(1,0))
+        # x = self.hidden_dropout2(x)
+        x = torch.mm(x, e_full.transpose(1,0))
         pred = torch.sigmoid(x)
         return pred
 
