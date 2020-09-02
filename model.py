@@ -79,10 +79,14 @@ class RESCAL_Core(torch.nn.Module):
 class TuckER(torch.nn.Module):
     def __init__(self, d, d1, d2, **kwargs):
         super(TuckER, self).__init__()
+        
+        self.entity_count= len(d.entities)
 
         self.E = t3.TTEmbedding(
             voc_size=len(d.entities),
-            emb_size=d1
+            emb_size=d1,
+            auto_shapes=True,       # Should figure out what these shapes are...
+            auto_shape_mode='mixed'
         )
         # self.E = torch.nn.Embedding(len(d.entities), d1)
         # self.R = torch.nn.Embedding(len(d.relations), d2)
@@ -101,8 +105,9 @@ class TuckER(torch.nn.Module):
         
 
     def init(self):
-        xavier_normal_(self.E.weight.data)
+        # xavier_normal_(self.E.weight.data)
         # xavier_normal_(self.R.weight.data)
+        pass
 
     def forward(self, e1_idx, r_idx):
         # Hopefully, should never have to materialize the matrix 
@@ -121,6 +126,6 @@ class TuckER(torch.nn.Module):
         x = self.bn1(x)
         # x = self.hidden_dropout2(x)
         x = torch.mm(x, e_full.transpose(1,0))
-        pred = torch.sigmoid(x)
+        pred = torch.sigmoid(x)[:, 0:self.entity_count]
         return pred
 
