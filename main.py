@@ -106,12 +106,18 @@ class Experiment:
         print("Number of training data points: %d" % len(train_data_idxs))
 
         model = TuckER(d, self.ent_vec_dim, self.rel_vec_dim, **self.kwargs)
+
+        device = torch.device('cuda:0')
+        torch.cuda.set_device(device)
+ 
         if self.cuda:
             model.cuda()
-        model.init()
+        
         opt = torch.optim.Adam(model.parameters(), lr=self.learning_rate)
         if self.decay_rate:
             scheduler = ExponentialLR(opt, self.decay_rate)
+ 
+        model.init()
 
         er_vocab = self.get_er_vocab(train_data_idxs)
         er_vocab_pairs = list(er_vocab.keys())
@@ -143,7 +149,7 @@ class Experiment:
             print(time.time()-start_train)    
             print(np.mean(losses))
             model.eval()
-            if not it%5:
+            if not it%20:
                 with torch.no_grad():
                     print("Validation:")
                     self.evaluate(model, d.valid_data)

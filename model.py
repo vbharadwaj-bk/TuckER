@@ -86,14 +86,16 @@ class TuckER(torch.nn.Module):
             voc_size=len(d.entities),
             emb_size=d1,
             auto_shapes=True,       # Should figure out what these shapes are...
-            auto_shape_mode='mixed'
+            auto_shape_mode='mixed',
+            tt_rank=128,
+            d=4
         )
         # self.E = torch.nn.Embedding(len(d.entities), d1)
-        # self.R = torch.nn.Embedding(len(d.relations), d2)
-        # self.W = torch.nn.Parameter(torch.tensor(np.random.uniform(-1, 1, (d2, d1, d1)), 
-        #                            dtype=torch.float, device="cuda", requires_grad=True))
+        self.R = torch.nn.Embedding(len(d.relations), d2)
+        self.W = torch.nn.Parameter(torch.tensor(np.random.uniform(-1, 1, (d2, d1, d1)), 
+                                   dtype=torch.float, requires_grad=True))
 
-        self.core = RESCAL_Core([5, 10, 10], [8, 5, 5])        
+        # self.core = RESCAL_Core([5, 10, 10], [8, 5, 5])        
 
         self.input_dropout = torch.nn.Dropout(kwargs["input_dropout"])
         self.hidden_dropout1 = torch.nn.Dropout(kwargs["hidden_dropout1"])
@@ -106,25 +108,32 @@ class TuckER(torch.nn.Module):
 
     def init(self):
         # xavier_normal_(self.E.weight.data)
-        # xavier_normal_(self.R.weight.data)
-        pass
+        xavier_normal_(self.R.weight.data)
+        pass 
 
     def forward(self, e1_idx, r_idx):
         # Hopefully, should never have to materialize the matrix 
         e_full = self.E.tt_matrix.full()
-
         e1 = e_full[e1_idx]
+
+        # e_full = self.E.weight
+        # e1 = self.E(e1_idx)
+
         x = self.bn0(e1)
         # x = self.input_dropout(x)
         x = x.view(-1, 1, e1.size(1))
 
-        W_mat = self.core.getStack(r_idx)
-        # W_mat = self.hidden_dropout1(W_mat)
+        # W_mat = self.core.getStack(r_idx)
+
+        r = self.R(r_idx)
+        W_mat = torch.mm(r, self.W.view(r.size(1), -1))
+        W_mat = W_mat.view(-1, e1.size(1), e1.size(1))
+        W_mat = self.hidden_dropout1(W_mat)
 
         x = torch.bmm(x, W_mat) 
         x = x.view(-1, e1.size(1))      
         x = self.bn1(x)
-        # x = self.hidden_dropout2(x)
+        x = self.hidden_dropout2(x)
         x = torch.mm(x, e_full.transpose(1,0))
         pred = torch.sigmoid(x)[:, 0:self.entity_count]
         return pred
