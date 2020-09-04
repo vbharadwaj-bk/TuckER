@@ -87,9 +87,13 @@ class TuckER(torch.nn.Module):
             emb_size=d1,
             auto_shapes=True,       # Should figure out what these shapes are...
             auto_shape_mode='mixed',
-            tt_rank=128,
+            tt_rank=8,
             d=4
         )
+        print(len(d.entities))
+        print("Embedding Compression Rate: {}".format(d1 * len(d.entities) / self.E.tt_matrix.dof))
+        exit()
+
         # self.E = torch.nn.Embedding(len(d.entities), d1)
         self.R = torch.nn.Embedding(len(d.relations), d2)
         self.W = torch.nn.Parameter(torch.tensor(np.random.uniform(-1, 1, (d2, d1, d1)), 
