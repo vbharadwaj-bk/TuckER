@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import time
 from collections import defaultdict
-from model import *
+from model2 import *
 from torch.optim.lr_scheduler import ExponentialLR
 import argparse
 
