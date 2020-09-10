@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch.nn.init import xavier_normal_
 
-import tensornetwork as tn
+import tensornetwork as tn 
 import numpy as np
 import torch
 import time
@@ -96,6 +96,7 @@ class TuckER(torch.nn.Module):
         x = x.view(-1, 1, e1.size(1))
 
         W_mat = self.core.gather_n(r_idx) 
+        W_mat = self.hidden_dropout1(W_mat)
 
         x = torch.bmm(x, W_mat) 
         x = x.view(-1, e1.size(1))      
